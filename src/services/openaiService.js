@@ -152,4 +152,7 @@ export const generateAIScenario = async (type = 'all', callsign = '', phraseolog
     // Fallback to local scenario on error
     return mergeCallsignIntoScenario(getRandomScenario(type), callsign);
   }
-}; 
+};
+
+// Export helper so non-AI scenarios can reuse callsign injection
+export { mergeCallsignIntoScenario }; 

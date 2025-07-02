@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 
 const AuthModal = ({ isOpen, onClose, defaultMode = 'signin' }) => {
@@ -9,10 +9,16 @@ const AuthModal = ({ isOpen, onClose, defaultMode = 'signin' }) => {
   const [preferredCallsign, setPreferredCallsign] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [donationComplete, setDonationComplete] = useState(false);
+  const paypalContainerRef = useRef(null);
 
   const { signIn, signUp } = useAuth();
 
   const handleSubmit = async (e) => {
+    if (mode === 'signup' && !donationComplete) {
+      setError('Please complete the PayPal donation before creating an account.');
+      return;
+    }
     e.preventDefault();
     setError('');
     setIsLoading(true);
@@ -55,6 +61,42 @@ const AuthModal = ({ isOpen, onClose, defaultMode = 'signin' }) => {
     resetForm();
   };
 
+  // Load PayPal script when signup mode is selected and donation not complete
+  useEffect(() => {
+    if (mode !== 'signup' || donationComplete) return;
+
+    // Avoid loading multiple times
+    if (window.paypal || document.querySelector('#paypal-sdk')) return;
+
+    const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
+    if (!clientId) {
+      console.warn('VITE_PAYPAL_CLIENT_ID is not set – PayPal donation button will not load');
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.id = 'paypal-sdk';
+    script.src = `https://www.paypal.com/sdk/js?client-id=${clientId}&currency=USD&disable-funding=credit,card`;
+    script.onload = () => {
+      window.paypal.Buttons({
+        style: { layout: 'vertical', color: 'gold', shape: 'pill', label: 'donate' },
+        createOrder: (data, actions) => {
+          return actions.order.create({
+            purchase_units: [{ amount: { value: '5.00', currency_code: 'USD' }, description: 'SimpleATC Donation' }]
+          });
+        },
+        onApprove: (data, actions) => actions.order.capture().then(() => {
+          setDonationComplete(true);
+        }),
+        onError: (err) => {
+          console.error('PayPal error', err);
+          setError('Payment could not be processed. Please try again.');
+        }
+      }).render(paypalContainerRef.current);
+    };
+    document.body.appendChild(script);
+  }, [mode, donationComplete]);
+
   if (!isOpen) return null;
 
   return (
@@ -96,7 +138,7 @@ const AuthModal = ({ isOpen, onClose, defaultMode = 'signin' }) => {
         </div>
 
         <form onSubmit={handleSubmit}>
-          {mode === 'signup' && (
+          {mode === 'signup' && donationComplete && (
             <>
               <div style={{ marginBottom: '15px' }}>
                 <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
@@ -139,51 +181,67 @@ const AuthModal = ({ isOpen, onClose, defaultMode = 'signin' }) => {
             </>
           )}
 
-          <div style={{ marginBottom: '15px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="your@email.com"
-              required
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: '2px solid #dee2e6',
-                borderRadius: '5px',
-                fontSize: '1rem'
-              }}
-            />
-          </div>
+          {mode === 'signup' && !donationComplete && (
+            <div style={{ marginBottom: '20px' }}>
+              <p style={{ fontSize: '0.9rem', marginBottom: '10px', textAlign: 'center' }}>
+                To support AI API costs, a one-time $5 donation is required to create an account.
+              </p>
+              <div ref={paypalContainerRef}></div>
+              <p style={{ fontSize: '0.8rem', color: '#666', marginTop: '10px', textAlign: 'center' }}>
+                After your donation is approved, the account creation form will appear and you will recieve access to 500 AI scenarios, Simbrief Integration, Progress Tracker, and more.
+              </p>
+            </div>
+          )}
 
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
-              required
-              minLength={6}
-              style={{
-                width: '100%',
-                padding: '10px',
-                border: '2px solid #dee2e6',
-                borderRadius: '5px',
-                fontSize: '1rem'
-              }}
-            />
-            {mode === 'signup' && (
-              <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '5px' }}>
-                Password must be at least 6 characters
-              </div>
-            )}
-          </div>
+          {(!mode === 'signup' || donationComplete) && (
+            <div style={{ marginBottom: '15px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="your@email.com"
+                required
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '2px solid #dee2e6',
+                  borderRadius: '5px',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+          )}
+
+          {(!mode === 'signup' || donationComplete) && (
+            <div style={{ marginBottom: '20px' }}>
+              <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold' }}>
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter password"
+                required
+                minLength={6}
+                style={{
+                  width: '100%',
+                  padding: '10px',
+                  border: '2px solid #dee2e6',
+                  borderRadius: '5px',
+                  fontSize: '1rem'
+                }}
+              />
+              {mode === 'signup' && (
+                <div style={{ fontSize: '0.8rem', color: '#666', marginTop: '5px' }}>
+                  Password must be at least 6 characters
+                </div>
+              )}
+            </div>
+          )}
 
           {error && (
             <div style={{
@@ -199,23 +257,25 @@ const AuthModal = ({ isOpen, onClose, defaultMode = 'signin' }) => {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            style={{
-              width: '100%',
-              padding: '12px',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '5px',
-              fontSize: '1rem',
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              opacity: isLoading ? 0.7 : 1
-            }}
-          >
-            {isLoading ? 'Please wait...' : (mode === 'signin' ? 'Sign In' : 'Create Account')}
-          </button>
+          {((mode === 'signup' && donationComplete) || mode === 'signin') && (
+            <button
+              type="submit"
+              disabled={isLoading}
+              style={{
+                width: '100%',
+                padding: '12px',
+                backgroundColor: '#007bff',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                fontSize: '1rem',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                opacity: isLoading ? 0.7 : 1
+              }}
+            >
+              {isLoading ? 'Please wait...' : (mode === 'signin' ? 'Sign In' : 'Create Account')}
+            </button>
+          )}
         </form>
 
         <div style={{ textAlign: 'center', marginTop: '20px' }}>

@@ -112,45 +112,65 @@ const AppContent = () => {
       {/* Supabase Connected Banner removed for cleaner UI */}
       
       <header className="header">
-        {/* Top bar with authentication controls */}
-        <div className="header-top" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {user ? (
-            <UserMenu />
-          ) : (
-            <>
-              <button
-                onClick={openSignIn}
-                className="btn btn-secondary"
-                style={{
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
-                  borderRadius: '8px',
-                  padding: '8px 16px',
-                  color: 'white',
-                  cursor: 'pointer',
-                  fontSize: '0.9rem'
-                }}
-              >
-                Sign In
-              </button>
-              <button
-                onClick={openSignUp}
-                className="btn btn-primary"
-                style={{
-                  background: 'white',
-                  border: 'none',
-                  borderRadius: '8px',
-                  padding: '8px 16px',
-                  color: '#667eea',
-                  cursor: 'pointer',
-                  fontSize: '0.9rem',
-                  fontWeight: 'bold'
-                }}
-              >
-                Sign Up
-              </button>
-            </>
-          )}
+        {/* Top bar with callsign button (left) and authentication controls (right) */}
+        <div className="header-top" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', width: '100%' }}>
+          {/* Callsign / Phraseology button */}
+          <button
+            onClick={() => setIsCallsignModalOpen(true)}
+            className="btn btn-light"
+            style={{
+              background: 'rgba(255,255,255,0.15)',
+              border: '1px solid rgba(255,255,255,0.3)',
+              borderRadius: '8px',
+              padding: '8px 16px',
+              color: 'white',
+              cursor: 'pointer',
+              fontSize: '0.9rem'
+            }}
+          >
+            Callsign / Phraseology
+          </button>
+
+          {/* Authentication controls */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {user ? (
+              <UserMenu />
+            ) : (
+              <>
+                <button
+                  onClick={openSignIn}
+                  className="btn btn-secondary"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.2)',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    borderRadius: '8px',
+                    padding: '8px 16px',
+                    color: 'white',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem'
+                  }}
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={openSignUp}
+                  className="btn btn-primary"
+                  style={{
+                    background: 'white',
+                    border: 'none',
+                    borderRadius: '8px',
+                    padding: '8px 16px',
+                    color: '#667eea',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    fontWeight: 'bold'
+                  }}
+                >
+                  Sign Up
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Main title and tagline */}
@@ -199,7 +219,7 @@ const AppContent = () => {
           </p>
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
             <button onClick={openSignUp} className="btn btn-primary">
-              {isSupabaseConfigured() ? 'Sign Up Free' : 'Setup Required'}
+              {isSupabaseConfigured() ? 'Sign Up' : 'Setup Required'}
             </button>
             <button onClick={openSignIn} className="btn btn-secondary">
               {isSupabaseConfigured() ? 'Sign In' : 'Demo Mode'}
@@ -207,23 +227,6 @@ const AppContent = () => {
           </div>
         </div>
       )}
-
-      {/* Callsign settings button visible to all */}
-      <button
-        onClick={() => setIsCallsignModalOpen(true)}
-        className="btn btn-light"
-        style={{
-          background: 'rgba(255,255,255,0.15)',
-          border: '1px solid rgba(255,255,255,0.3)',
-          borderRadius: '8px',
-          padding: '8px 16px',
-          color: 'white',
-          cursor: 'pointer',
-          fontSize: '0.9rem'
-        }}
-      >
-        Callsign / Phraseology
-      </button>
 
       <footer style={{ 
         textAlign: 'center', 

@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { generateAIScenario } from '../services/openaiService';
+import { generateAIScenario, mergeCallsignIntoScenario } from '../services/openaiService';
 import { getRandomScenario } from '../data/scenarios';
 import { scoreResponse } from '../utils/scoring';
 import { useAuth } from '../contexts/AuthContext';
@@ -9,6 +9,7 @@ import SpeechInput from './SpeechInput';
 import ScoreDisplay from './ScoreDisplay';
 import ATCAudioPlayer from './ATCAudioPlayer';
 import { useCallsign } from '../contexts/CallsignContext';
+import { transformScenarioPhraseology } from '../utils/phraseology';
 
 const ATCScenario = () => {
   const [selectedType, setSelectedType] = useState('all');
@@ -104,8 +105,12 @@ const ATCScenario = () => {
       if (user) {
         scenario = await generateAIScenario(type, callsign, phraseology || 'FAA');
       } else {
-        scenario = getRandomScenario(type);
+        scenario = mergeCallsignIntoScenario(getRandomScenario(type), callsign);
       }
+
+      // Adjust phraseology (static or AI) to match user preference
+      scenario = transformScenarioPhraseology(scenario, phraseology);
+
       setCurrentScenario(scenario);
     } catch (err) {
       console.error('❌ Failed to load scenario:', err);
