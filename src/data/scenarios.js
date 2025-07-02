@@ -320,9 +320,9 @@ export const scenarios = [
   {
     id: 44,
     type: 'ifr_clearance',
-    atc_call: "November 1234, cleared to Dallas Love Field as filed, maintain 3000, expect 8000 ten minutes after, departure 127.0, squawk 5678",
-    expected_keywords: ['cleared', 'dallas', 'love', 'field', 'as', 'filed', 'maintain', '3000', 'expect', '8000', 'departure', '127.0', 'squawk', '5678', 'november', '1234'],
-    perfect_response: "Cleared to Dallas Love Field as filed, maintain 3000, expect 8000 in ten, departure 127.0, squawk 5678, November 1234"
+    atc_call: "November 1234, cleared to Dallas Love Field as filed, maintain 3000, expect 8000 ten minutes after departure, departure 127.0, squawk 5678",
+    expected_keywords: ['clear', 'dallas', 'love', 'field', 'as', 'filed', 'maintain', '3000', 'expect', '8000', 'departure', '127.0', 'squawk', '5678', 'november', '1234'],
+    perfect_response: "Cleared to Dallas Love Field as filed, maintain 3000, expect 8000 in ten, departure 1-2-7.0, squawk 5-6-7-8, November 1234"
   },
   {
     id: 45,

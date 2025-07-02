@@ -7,7 +7,7 @@ import { trainingService } from '../services/trainingService';
 import ScenarioSelector from './ScenarioSelector';
 import SpeechInput from './SpeechInput';
 import ScoreDisplay from './ScoreDisplay';
-import ATCAudioPlayer from './ATCAudioPlayer';
+import TTSAudio from './TTSAudio';
 import { useCallsign } from '../contexts/CallsignContext';
 import { transformScenarioPhraseology } from '../utils/phraseology';
 import TopUpModal from './TopUpModal';
@@ -340,6 +340,13 @@ const ATCScenario = () => {
     : 0;
 
   const [showTopUp, setShowTopUp] = useState(false);
+  const [showAtcText, setShowAtcText] = useState(false);
+
+  // Reset ATC text visibility whenever scenario changes
+  useEffect(() => {
+    setShowAtcText(false);
+    setAudioFinished(!(user || currentScenario?.type === 'ifr_clearance')); // reset audio gate
+  }, [currentScenario]);
 
   if (!callsign || !phraseology) {
     return null; // Wait until callsign selected, modal is visible
@@ -384,19 +391,27 @@ const ATCScenario = () => {
         </div>
       )}
 
-      {/* ATC Call Display */}
-      <div className="atc-call">
-        <div className="atc-label">ATC says:</div>
-        <div>"{currentScenario.atc_call}"</div>
-      </div>
+      {/* ATC Call Display or Reveal Button */}
+      {!showAtcText ? (
+        <div style={{ textAlign: 'center', margin: '15px 0' }}>
+          <button className="btn btn-secondary" onClick={() => setShowAtcText(true)}>
+            📄 Show ATC Text
+          </button>
+        </div>
+      ) : (
+        <div className="atc-call">
+          <div className="atc-label">ATC says:</div>
+          <div>"{currentScenario.atc_call}"</div>
+        </div>
+      )}
 
-      {/* Audio playback if available */}
-      {currentScenario.audioUrl && (
-        <ATCAudioPlayer src={currentScenario.audioUrl} onEnded={() => setAudioFinished(true)} />
+      {/* ATC TTS Audio */}
+      {currentScenario?.atc_call && (user || currentScenario.type === 'ifr_clearance') && (
+        <TTSAudio text={currentScenario.atc_call} onEnded={() => setAudioFinished(true)} />
       )}
 
       {/* Notice to play audio first */}
-      {currentScenario.audioUrl && !audioFinished && (
+      {currentScenario?.atc_call && (user || currentScenario.type === 'ifr_clearance') && !audioFinished && (
         <div style={{ textAlign: 'center', color: '#dc3545', marginBottom: '10px' }}>
           ▶️ Please listen to the ATC call before responding
         </div>
@@ -404,12 +419,13 @@ const ATCScenario = () => {
 
       {/* Speech Input Section */}
       <SpeechInput 
+        key={currentScenario?.id}
         onTranscriptChange={handleTranscriptChange}
         onSpeechComplete={handleSpeechComplete}
         onStopRecording={handleManualSave}
         forceStop={forceStopSpeech}
         expectedKeywords={currentScenario.expected_keywords}
-        disabled={currentScenario.audioUrl ? !audioFinished : false}
+        disabled={currentScenario?.atc_call && (user || currentScenario.type === 'ifr_clearance') ? !audioFinished : false}
       />
 
       {/* Manual Score Button */}
