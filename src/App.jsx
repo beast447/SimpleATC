@@ -5,6 +5,7 @@ import CallsignModal from './components/CallsignModal';
 import ATCScenario from './components/ATCScenario';
 import AuthModal from './components/Auth/AuthModal';
 import UserMenu from './components/Auth/UserMenu';
+import SplashScreen from './components/SplashScreen';
 
 // Check if Supabase is configured
 const isSupabaseConfigured = () => {
@@ -20,6 +21,7 @@ const AppContent = () => {
   const { user, loading } = useAuth();
   const { callsign, phraseology } = useCallsign();
   const [isCallsignModalOpen, setIsCallsignModalOpen] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
 
   // Force loading to complete after 10 seconds as absolute fallback
   useEffect(() => {
@@ -36,12 +38,12 @@ const AppContent = () => {
     return () => clearTimeout(forceLoadTimeout);
   }, [loading]);
 
-  // Auto-open on first visit or if data missing
+  // Auto-open Callsign modal only after splash dismissed and data missing
   useEffect(() => {
-    if (!callsign || !phraseology) {
+    if (!showSplash && (!callsign || !phraseology)) {
       setIsCallsignModalOpen(true);
     }
-  }, [callsign, phraseology]);
+  }, [callsign, phraseology, showSplash]);
 
   const openSignIn = () => {
     if (!isSupabaseConfigured()) {
@@ -64,6 +66,10 @@ const AppContent = () => {
   const openProfile = () => {
     // TODO: Implement profile modal
     console.log('Profile modal - coming soon!');
+  };
+
+  const handleCloseSplash = () => {
+    setShowSplash(false);
   };
 
   if (loading && !forceLoaded) {
@@ -257,6 +263,8 @@ const AppContent = () => {
         onClose={() => setIsAuthModalOpen(false)}
         defaultMode={authModalMode}
       />
+
+      {showSplash && <SplashScreen onClose={handleCloseSplash} />}
     </div>
   );
 };
