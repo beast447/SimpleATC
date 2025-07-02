@@ -239,6 +239,14 @@ const AppContent = () => {
         <p style={{ marginTop: '10px' }}>
           Perfect for VATSIM preparation and student pilot training
         </p>
+        {/* Legal links */}
+        <p style={{ marginTop: '14px' }}>
+          <a href="/terms.html" target="_blank" rel="noopener noreferrer" style={{ color: 'white', textDecoration: 'underline' }}>Terms&nbsp;of&nbsp;Service</a>
+          &nbsp;&bull;&nbsp;
+          <a href="/privacy.html" target="_blank" rel="noopener noreferrer" style={{ color: 'white', textDecoration: 'underline' }}>Privacy&nbsp;Policy</a>
+          &nbsp;&bull;&nbsp;
+          <a href="/refund.html" target="_blank" rel="noopener noreferrer" style={{ color: 'white', textDecoration: 'underline' }}>Refund&nbsp;Policy</a>
+        </p>
       </footer>
 
       <AuthModal 
