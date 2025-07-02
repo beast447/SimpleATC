@@ -66,7 +66,27 @@ const AuthModal = ({ isOpen, onClose, defaultMode = 'signin' }) => {
     if (mode !== 'signup' || donationComplete) return;
 
     // Avoid loading multiple times
-    if (window.paypal || document.querySelector('#paypal-sdk')) return;
+    if (window.paypal) {
+      // SDK already loaded – just render button
+      try {
+        window.paypal.Buttons({
+          style: { layout: 'vertical', color: 'gold', shape: 'pill', label: 'donate' },
+          createOrder: (data, actions) => actions.order.create({
+            purchase_units: [{ amount: { value: '5.00', currency_code: 'USD' }, description: 'SimpleATC Donation' }]
+          }),
+          onApprove: (data, actions) => actions.order.capture().then(() => setDonationComplete(true)),
+          onError: (err) => {
+            console.error('PayPal error', err);
+            setError('Payment could not be processed. Please try again.');
+          }
+        }).render(paypalContainerRef.current);
+      } catch (err) {
+        console.error('PayPal render error', err);
+      }
+      return;
+    }
+
+    if (document.querySelector('#paypal-sdk')) return;
 
     const clientId = import.meta.env.VITE_PAYPAL_CLIENT_ID;
     if (!clientId) {
