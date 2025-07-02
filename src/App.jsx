@@ -248,6 +248,11 @@ const AppContent = () => {
         <p style={{ marginTop: '10px' }}>
           Perfect for VATSIM preparation and student pilot training
         </p>
+        <p style={{ marginTop: '10px' }}>
+          <a href="https://discord.gg/4TfgMeHB" target="_blank" rel="noopener noreferrer" style={{ background: '#5865F2', color: 'white', padding: '8px 16px', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold' }}>
+            💬 Contact Support on Discord
+          </a>
+        </p>
         {/* Legal links */}
         <p style={{ marginTop: '14px' }}>
           <a href="/terms.html" target="_blank" rel="noopener noreferrer" style={{ color: 'white', textDecoration: 'underline' }}>Terms&nbsp;of&nbsp;Service</a>

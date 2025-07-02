@@ -10,6 +10,8 @@ import ScoreDisplay from './ScoreDisplay';
 import ATCAudioPlayer from './ATCAudioPlayer';
 import { useCallsign } from '../contexts/CallsignContext';
 import { transformScenarioPhraseology } from '../utils/phraseology';
+import TopUpModal from './TopUpModal';
+import { aiUsageService } from '../services/aiUsageService';
 
 const ATCScenario = () => {
   const [selectedType, setSelectedType] = useState('all');
@@ -103,7 +105,15 @@ const ATCScenario = () => {
     try {
       let scenario;
       if (user) {
-        scenario = await generateAIScenario(type, callsign, phraseology || 'FAA');
+        const remaining = await aiUsageService.getRemaining(user.id);
+
+        if (remaining <= 0) {
+          setShowTopUp(true);
+          scenario = mergeCallsignIntoScenario(getRandomScenario(type), callsign);
+        } else {
+          scenario = await generateAIScenario(type, callsign, phraseology || 'FAA');
+          await aiUsageService.increment(user.id);
+        }
       } else {
         scenario = mergeCallsignIntoScenario(getRandomScenario(type), callsign);
       }
@@ -329,6 +339,8 @@ const ATCScenario = () => {
     ? Math.round(sessionStats.totalScore / sessionStats.totalAttempts) 
     : 0;
 
+  const [showTopUp, setShowTopUp] = useState(false);
+
   if (!callsign || !phraseology) {
     return null; // Wait until callsign selected, modal is visible
   }
@@ -447,6 +459,8 @@ const ATCScenario = () => {
           </div>
         )}
       </div>
+
+      {showTopUp && <TopUpModal isOpen={showTopUp} onClose={(reset) => { setShowTopUp(false); if (reset) { /* reload scenario */ loadScenario(selectedType); } }} />}
     </div>
   );
 };
