@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { CallsignProvider } from './contexts/CallsignContext';
+import { CallsignProvider, useCallsign } from './contexts/CallsignContext';
 import CallsignModal from './components/CallsignModal';
 import ATCScenario from './components/ATCScenario';
 import AuthModal from './components/Auth/AuthModal';
@@ -18,6 +18,8 @@ const AppContent = () => {
   const [authModalMode, setAuthModalMode] = useState('signin');
   const [forceLoaded, setForceLoaded] = useState(false);
   const { user, loading } = useAuth();
+  const { callsign, phraseology } = useCallsign();
+  const [isCallsignModalOpen, setIsCallsignModalOpen] = useState(false);
 
   // Force loading to complete after 10 seconds as absolute fallback
   useEffect(() => {
@@ -33,6 +35,13 @@ const AppContent = () => {
 
     return () => clearTimeout(forceLoadTimeout);
   }, [loading]);
+
+  // Auto-open on first visit or if data missing
+  useEffect(() => {
+    if (!callsign || !phraseology) {
+      setIsCallsignModalOpen(true);
+    }
+  }, [callsign, phraseology]);
 
   const openSignIn = () => {
     if (!isSupabaseConfigured()) {
@@ -56,8 +65,6 @@ const AppContent = () => {
     // TODO: Implement profile modal
     console.log('Profile modal - coming soon!');
   };
-
-
 
   if (loading && !forceLoaded) {
     return (
@@ -106,7 +113,7 @@ const AppContent = () => {
       
       <header className="header">
         {/* Top bar with authentication controls */}
-        <div className="header-top">
+        <div className="header-top" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           {user ? (
             <UserMenu />
           ) : (
@@ -172,7 +179,7 @@ const AppContent = () => {
       </main>
 
       {/* Callsign selection modal */}
-      <CallsignModal />
+      <CallsignModal isOpen={isCallsignModalOpen} onClose={() => setIsCallsignModalOpen(false)} />
 
       {!user && (
         <div style={{
@@ -200,6 +207,23 @@ const AppContent = () => {
           </div>
         </div>
       )}
+
+      {/* Callsign settings button visible to all */}
+      <button
+        onClick={() => setIsCallsignModalOpen(true)}
+        className="btn btn-light"
+        style={{
+          background: 'rgba(255,255,255,0.15)',
+          border: '1px solid rgba(255,255,255,0.3)',
+          borderRadius: '8px',
+          padding: '8px 16px',
+          color: 'white',
+          cursor: 'pointer',
+          fontSize: '0.9rem'
+        }}
+      >
+        Callsign / Phraseology
+      </button>
 
       <footer style={{ 
         textAlign: 'center', 

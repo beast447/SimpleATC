@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { generateAIScenario } from '../services/openaiService';
+import { getRandomScenario } from '../data/scenarios';
 import { scoreResponse } from '../utils/scoring';
 import { useAuth } from '../contexts/AuthContext';
 import { trainingService } from '../services/trainingService';
@@ -99,14 +100,19 @@ const ATCScenario = () => {
   const loadScenario = useCallback(async (type) => {
     setLoadingScenario(true);
     try {
-      const scenario = await generateAIScenario(type, callsign, phraseology || 'FAA');
+      let scenario;
+      if (user) {
+        scenario = await generateAIScenario(type, callsign, phraseology || 'FAA');
+      } else {
+        scenario = getRandomScenario(type);
+      }
       setCurrentScenario(scenario);
     } catch (err) {
       console.error('❌ Failed to load scenario:', err);
     } finally {
       setLoadingScenario(false);
     }
-  }, [callsign, phraseology]);
+  }, [callsign, phraseology, user]);
 
   // Initial load
   useEffect(() => {

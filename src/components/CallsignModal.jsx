@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useCallsign } from '../contexts/CallsignContext';
 
 const backdropStyle = {
@@ -43,26 +43,51 @@ const buttonStyle = {
   fontSize: '1rem'
 };
 
-const CallsignModal = () => {
+const CloseBtn = ({ onClick }) => (
+  <button
+    onClick={onClick}
+    style={{
+      position: 'absolute',
+      top: 10,
+      right: 12,
+      background: 'transparent',
+      border: 'none',
+      color: '#888',
+      fontSize: '1.4rem',
+      cursor: 'pointer'
+    }}
+    aria-label="Close"
+  >
+    ×
+  </button>
+);
+
+const CallsignModal = ({ isOpen, onClose }) => {
   const { callsign, setCallsign, phraseology, setPhraseology } = useCallsign();
   const [value, setValue] = useState(callsign || '');
   const [selectedPhrase, setSelectedPhrase] = useState(phraseology || 'FAA');
 
-  const show = !callsign || !phraseology;
+  // Reset local form when modal reopens
+  useEffect(() => {
+    setValue(callsign || '');
+    setSelectedPhrase(phraseology || 'FAA');
+  }, [isOpen]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     if (value.trim()) {
       setCallsign(value.trim());
       setPhraseology(selectedPhrase);
+      onClose && onClose();
     }
   };
 
-  if (!show) return null;
+  if (!isOpen) return null;
 
   return (
     <div style={backdropStyle}>
       <div style={modalStyle}>
+        <CloseBtn onClick={onClose} />
         <h2>Select Your Callsign</h2>
         <p style={{ fontSize: '0.9rem', color: '#555' }}>
           Enter the aircraft callsign you want to use for all scenarios.
@@ -99,6 +124,11 @@ const CallsignModal = () => {
           <button type="submit" style={buttonStyle} disabled={!value.trim()}>
             Save
           </button>
+          {onClose && (
+            <button type="button" style={{ ...buttonStyle, background: '#555', marginLeft: '10px' }} onClick={onClose}>
+              Cancel
+            </button>
+          )}
         </form>
       </div>
     </div>
