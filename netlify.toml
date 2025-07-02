@@ -1,0 +1,3 @@
+[build]
+  command = "npm cache clean --force && npm run build"
+  publish = "dist"          # or whatever folder Vite outputs
